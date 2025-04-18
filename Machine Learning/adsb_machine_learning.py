@@ -24,7 +24,7 @@ from sklearn.metrics import ConfusionMatrixDisplay
 import seaborn as sns
 
 import os
-os.system('cls')
+os.system('cls' if os.name == 'nt' else 'clear')
 
 random_state = 345
 
@@ -295,7 +295,7 @@ def feature_importance(
 
 def load_data(
         csv_path: str,
-        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7],
+        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7, 8],
         y_cols: List[int] = [8]
 ) -> List[pd.DataFrame]:
     """
@@ -331,6 +331,10 @@ if __name__ == "__main__":
     X, y = load_data(input_file)
     col_names = X.columns
     y = y.to_numpy().ravel()
+    print("First few rows of data:\n", X.head())
+    print(f"Number of columns in X: {X.shape[1]}")
+
+
 
     # Create Scaler
     scaler = StandardScaler()
