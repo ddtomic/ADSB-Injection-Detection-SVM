@@ -318,7 +318,7 @@ if __name__ == "__main__":
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Change based on OHARE dataset or 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    input_file = "OHARE_authentic_attack.csv"
+    input_file = "Dataset/processed data/one airport.csv"
 
     feature_correlation_save_path = prefix + "_feature_correlation.png"
     feature_importance_save_path = prefix + "_feature_importance.png"
