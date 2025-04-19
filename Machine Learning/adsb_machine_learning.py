@@ -23,6 +23,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from tqdm import tqdm
 import seaborn as sns
+from sklearn.svm import SVC
+
 
 import os
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -78,7 +80,8 @@ def evaluate(
     estimator: BaseEstimator, 
     X_train, X_test,
     y_train, y_test,
-    cv=10
+    # reduced cv to make training time reasonable
+    cv=3
 ):
 
     metrics = Metrics()
@@ -112,7 +115,8 @@ def random_search(
         estimator: BaseEstimator, 
         params: dict,
         cv: int = 10,
-        n_iter: int = 100,
+        # lowering iterations to make training time reasonable
+        n_iter: int = 10,
         n_jobs: int = -1,
         verbose: int = 0
 ) -> Tuple[RandomizedSearchCV, float]:
@@ -164,6 +168,7 @@ LR: str = "LR"
 DT: str = "DT"
 NB: str = "NB"
 NEWDT: str = "NEWDT"
+SVM: str = "SVM"
 
 estimator_dict = {
     RF: RandomForestClassifier,
@@ -172,7 +177,8 @@ estimator_dict = {
     LR: LogisticRegression,
     DT: DecisionTreeClassifier,
     NB: GaussianNB,
-    NEWDT: DecisionTreeClassifier
+    NEWDT: DecisionTreeClassifier,
+    SVM: SVC
 }
 
 params_dict = {
@@ -230,6 +236,12 @@ params_dict = {
         'min_samples_split': randint(2, 20),
         'min_samples_leaf': randint(1, 20),
         'criterion': ['gini', 'entropy']
+    },
+    SVM: {
+        # dataset is large, so keeping hyperparameters simple.
+        'C': loguniform(1e-2, 1e2),
+        'kernel': ['linear', 'rbf'],
+        'gamma': ['scale'],
     }
 }
 
@@ -304,8 +316,13 @@ def feature_importance(
 
 def load_data(
         csv_path: str,
-        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7],
-        y_cols: List[int] = [8]
+
+        # use for 10 airport dataset
+        ##y_cols: List[int] = [8]
+
+        # use for ohare dataset
+        x_cols: List[int] = [0, 1, 2, 3, 4, 5],
+        y_cols: List[int] = [6]
 ) -> List[pd.DataFrame]:
     """
     Loads the data from the given csv_path.
@@ -322,12 +339,12 @@ if __name__ == "__main__":
     # Change prefix to OHARE for ohare dataset
     # Change prefix to 10_AIRPORT for 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    prefix = "10_AIRPORT"
+    prefix = "OHARE"
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Change based on OHARE dataset or 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    input_file = "Dataset/processed data/Combined Training Set.csv"
+    input_file = "Dataset/processed data/one airport.csv"
 
     feature_correlation_save_path = prefix + "_feature_correlation.png"
     feature_importance_save_path = prefix + "_feature_importance.png"
@@ -406,7 +423,7 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(scaler.fit_transform(X), y, train_size=0.7, random_state=random_state)
 
     # Perform Search and Evaluation on each model, and provide loading bar    
-    for model in tqdm([NEWDT], desc="Training Models"):
+    for model in tqdm([SVM], desc="Training Models"):
 
         print(f"\n\nModel: {model}")
 
