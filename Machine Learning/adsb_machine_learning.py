@@ -163,6 +163,7 @@ MLP: str = "MLP"
 LR: str = "LR"
 DT: str = "DT"
 NB: str = "NB"
+NEWDT: str = "NEWDT"
 
 estimator_dict = {
     RF: RandomForestClassifier,
@@ -170,7 +171,8 @@ estimator_dict = {
     MLP: MLPClassifier,
     LR: LogisticRegression,
     DT: DecisionTreeClassifier,
-    NB: GaussianNB
+    NB: GaussianNB,
+    NEWDT: DecisionTreeClassifier
 }
 
 params_dict = {
@@ -222,6 +224,12 @@ params_dict = {
     },
     NB: {
         'var_smoothing': loguniform(1e-9, 1e-6)
+    },
+    NEWDT: {
+        'max_depth': randint(5, 30),
+        'min_samples_split': randint(2, 20),
+        'min_samples_leaf': randint(1, 20),
+        'criterion': ['gini', 'entropy']
     }
 }
 
@@ -296,8 +304,8 @@ def feature_importance(
 
 def load_data(
         csv_path: str,
-        x_cols: List[int] = [0, 1, 2, 3, 4, 5],
-        y_cols: List[int] = [6]
+        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7],
+        y_cols: List[int] = [8]
 ) -> List[pd.DataFrame]:
     """
     Loads the data from the given csv_path.
@@ -314,12 +322,12 @@ if __name__ == "__main__":
     # Change prefix to OHARE for ohare dataset
     # Change prefix to 10_AIRPORT for 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    prefix = "OHARE"
+    prefix = "10_AIRPORT"
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Change based on OHARE dataset or 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    input_file = "Dataset/processed data/one airport.csv"
+    input_file = "Dataset/processed data/Combined Training Set.csv"
 
     feature_correlation_save_path = prefix + "_feature_correlation.png"
     feature_importance_save_path = prefix + "_feature_importance.png"
@@ -398,7 +406,7 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(scaler.fit_transform(X), y, train_size=0.7, random_state=random_state)
 
     # Perform Search and Evaluation on each model, and provide loading bar    
-    for model in tqdm([RF, KNN, MLP, LR, DT, NB], desc="Training Models"):
+    for model in tqdm([NEWDT], desc="Training Models"):
 
         print(f"\n\nModel: {model}")
 
