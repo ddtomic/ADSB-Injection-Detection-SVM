@@ -21,6 +21,7 @@ from sklearn.base import BaseEstimator
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
+from tqdm import tqdm
 import seaborn as sns
 
 import os
@@ -295,8 +296,8 @@ def feature_importance(
 
 def load_data(
         csv_path: str,
-        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7, 8],
-        y_cols: List[int] = [8]
+        x_cols: List[int] = [0, 1, 2, 3, 4, 5],
+        y_cols: List[int] = [6]
 ) -> List[pd.DataFrame]:
     """
     Loads the data from the given csv_path.
@@ -331,8 +332,6 @@ if __name__ == "__main__":
     X, y = load_data(input_file)
     col_names = X.columns
     y = y.to_numpy().ravel()
-    print("First few rows of data:\n", X.head())
-    print(f"Number of columns in X: {X.shape[1]}")
 
 
 
@@ -398,8 +397,8 @@ if __name__ == "__main__":
     # Split Dataset
     X_train, X_test, y_train, y_test = train_test_split(scaler.fit_transform(X), y, train_size=0.7, random_state=random_state)
 
-    # Perform Search and Evaluation on each model    
-    for model in [RF, KNN, MLP, LR, DT, NB]:
+    # Perform Search and Evaluation on each model, and provide loading bar    
+    for model in tqdm([RF, KNN, MLP, LR, DT, NB], desc="Training Models"):
 
         print(f"\n\nModel: {model}")
 
