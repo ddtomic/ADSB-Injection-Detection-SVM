@@ -114,9 +114,9 @@ def evaluate(
 def random_search(
         estimator: BaseEstimator, 
         params: dict,
-        cv: int = 10,
+        cv: int = 3,
         # lowering iterations to make training time reasonable
-        n_iter: int = 10,
+        n_iter: int = 5,
         n_jobs: int = -1,
         verbose: int = 0
 ) -> Tuple[RandomizedSearchCV, float]:
@@ -241,7 +241,7 @@ params_dict = {
         # dataset is large, so keeping hyperparameters simple.
         'C': loguniform(1e-2, 1e2),
         'kernel': ['linear', 'rbf'],
-        'gamma': ['scale'],
+        'gamma': ['scale', 'auto']
     }
 }
 
@@ -316,20 +316,25 @@ def feature_importance(
 
 def load_data(
         csv_path: str,
-
-        # use for 10 airport dataset
-        ##y_cols: List[int] = [8]
-
-        # use for ohare dataset
-        x_cols: List[int] = [0, 1, 2, 3, 4, 5],
-        y_cols: List[int] = [6]
-) -> List[pd.DataFrame]:
+        x_cols: List[int] = [0, 1, 2, 3, 4, 6, 7],
+        y_cols: List[int] = [8],
+        sample: bool = False,
+        sample_size: float = 0.1
+) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Loads the data from the given csv_path.
+    If sample=True, returns a stratified sample of the dataset
     """
     data = pd.read_csv(csv_path)
     X = data.iloc[:, x_cols]
     y = data.iloc[:, y_cols]
+
+    if sample:
+        print(f"\nSampling {int(sample_size * 100)}% of the dataset...")
+        X, _, y, _ = train_test_split(
+            X, y, train_size=sample_size, random_state=random_state, stratify=y
+        )
+
     return X, y
 
 
@@ -339,12 +344,12 @@ if __name__ == "__main__":
     # Change prefix to OHARE for ohare dataset
     # Change prefix to 10_AIRPORT for 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    prefix = "OHARE"
+    prefix = "10_AIRPORT"
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Change based on OHARE dataset or 10 airport dataset
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    input_file = "Dataset/processed data/one airport.csv"
+    input_file = "Dataset/processed data/Combined Training Set.csv"
 
     feature_correlation_save_path = prefix + "_feature_correlation.png"
     feature_importance_save_path = prefix + "_feature_importance.png"
@@ -354,7 +359,7 @@ if __name__ == "__main__":
 
     # Load X and y data sets
     print("Loading dataset...")
-    X, y = load_data(input_file)
+    X, y = load_data(input_file, sample=True, sample_size=0.5)
     col_names = X.columns
     y = y.to_numpy().ravel()
 
@@ -498,11 +503,3 @@ if __name__ == "__main__":
             pickle.dump(fitted_model, file)
 
         print("Saved.")
-
-
-
-
-
-
-
-
